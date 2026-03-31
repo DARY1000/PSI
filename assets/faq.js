@@ -81,6 +81,10 @@ function toggleMic() {
 }
 
 function startMic() {
+  // Audio temporairement désactivé — bientôt disponible
+  showFaqNotice('🎙️ La reconnaissance vocale sera disponible prochainement. Utilisez la saisie texte ci-dessous.');
+  return;
+
   const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
   if (!SpeechRecognition) {
     document.getElementById('faqBrowserWarn').classList.add('visible');
@@ -306,7 +310,7 @@ function renderFaqHistory() {
 
 
 
-// Masquer le label FAB après 4 secondes
+// Bouton FAB visible
 setTimeout(() => {
   const label = document.getElementById('faqFabLabel');
   if (label) {
