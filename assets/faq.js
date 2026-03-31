@@ -1,15 +1,11 @@
 /* Wadagni Simulateur — FAQ Vocale Intelligente
- * Nécessite une clé API Anthropic : console.anthropic.com
- * Remplacez VOTRE_CLE_API_ICI par votre clé sk-ant-...
+ * Nécessite une clé API 
  */
 
 // ============================================
 // FAQ VOCALE INTELLIGENTE — Module complet
 // ============================================
 
-// Clé API Anthropic — À remplacer par votre clé
-// Pour obtenir : console.anthropic.com → API Keys
-const ANTHROPIC_API_KEY = 'VOTRE_CLE_API_ICI';
 
 // État
 let faqOpen = false;
@@ -28,48 +24,7 @@ const langLabels = {
   en: { placeholder: 'What does Wadagni plan for farmers?', status: 'Press to speak', recording: '🔴 Recording… Speak now', processing: 'Consulting the program…', responseHeader: 'Official program response', speak: '🔊 Listen to answer' }
 };
 
-// Contexte programme complet pour Claude
-const PROGRAMME_CONTEXT = `Tu es l'assistant officiel du programme présidentiel "Plus Loin, Ensemble" de Romuald Wadagni-Talata, candidat à l'élection présidentielle béninoise du 12 avril 2026.
-
-Voici les points clés du programme 2026-2033 que tu dois utiliser pour répondre :
-
-PRIORITÉ 1 — BIEN-ÊTRE SOCIAL
-- SANTÉ : Urgences vitales gratuites (paiement différé), carnet de santé digital, construction CHIP Parakou, télémédecine et IA dans tous les hôpitaux, pharmacopée traditionnelle modernisée, nouvelle faculté de médecine
-- PROTECTION SOCIALE : Plateforme nationale de prestations sociales, registre national des ménages, transferts monétaires numériques, SAMU social national
-- ÉDUCATION : 9000 salles de classe construites, taux CEP passé de 42% à 89%, cantines scolaires dans 100% des écoles, gratuité secondaire pour les filles, Sèmè City Hubs dans chaque pôle, télé-enseignement
-- EAU POTABLE : Programme "Eau pour tous", 314 nouveaux systèmes multi-villages, abonnement domicile à 10 000 FCFA (au lieu de 85 000)
-- SPORTS : Infrastructure sportive dans les 546 arrondissements, bourses sportives, Académie Nationale des Sports
-
-PRIORITÉ 2 — ÉCONOMIE DIVERSIFIÉE
-- AGRICULTURE : Assurance récolte + épargne + retraite agricole, tripler rendements manioc/maïs, agritech (drones, IA, capteurs), 314 nouveaux périmètres irrigués, Bénin 1er producteur africain de coton (641 000 tonnes)
-- INDUSTRIE : GDIZ Glo-Djigbé (20 000 emplois), fonds développement industriel, tarif industriel garanti
-- ÉNERGIE : Doublement accès électricité (30% → 61%), +100 MW tous les 2 ans, barrage Dogo-Bis (128 MW), branchement "payer plus tard"
-- INCLUSION FINANCIÈRE : Crédit digital en 48h (50 000 à 50 millions FCFA), Bénin 1er UEMOA (90% inclusion financière)
-- ARTISANAT : Bases d'appui dans chaque commune, ateliers d'excellence, crédit ARCH Artisan, village artisanal Marina Ouidah
-- TOURISME : 2,5 millions visiteurs/an d'ici 2033, station Avlékété, Parc Monts Kouffè-Wari Maro, "Villes et Villages de Splendeurs"
-
-PRIORITÉ 3 — COHÉSION NATIONALE
-- SÉCURITÉ : Police républicaine renforcée (+5600 agents), drones surveillance frontières, Programme Engagement Civique jeunesse
-- FINANCES PUBLIQUES : Croissance 8% en 2025, budget triplé (1200 → 3500 milliards FCFA), notation S&P BB-, fonds national d'investissements stratégiques
-- TECHNOLOGIE : Bénin exportateur de solutions tech, IA Factory, Sèmè City campus Ouidah (330 ha), Super App IA gouvernementale, data centers nationaux
-- CULTURE : Programme National d'Excellence Artistique (salaires artistes), Content City, label "Bénin Originals", port franc des arts
-
-6 PÔLES DE DÉVELOPPEMENT TERRITORIAL :
-- Atlantique-Littoral : GDIZ, économie bleue, Ganvié, Sèmè City
-- Ouémé-Plateau : Zone Kétou-Nigeria, Porto-Novo, industries
-- Zou-Collines : Abomey, agro-industrie, patrimoine
-- Mono-Couffo : Grand-Popo, tourisme balnéaire
-- Borgou-Alibori : CHIP Parakou, agriculture Nord, Nikki
-- Atacora-Donga : Monts Kouffè, safari, écotourisme, Natitingou
-
-RÈGLES DE RÉPONSE IMPORTANTES :
-1. Réponds TOUJOURS dans la langue demandée par l'utilisateur
-2. Si la question est en fon → réponds en fon
-3. Si la question est en yoruba → réponds en yoruba  
-4. Si la question est en bariba → réponds en bariba (ou français si bariba trop difficile)
-5. Sois concis (3-5 phrases max), direct et factuel
-6. Cite des chiffres réels du programme quand c'est pertinent
-7. Si une question ne concerne pas le programme Wadagni, réponds poliment que tu es limité au programme officiel`;
+// Contexte programme géré côté serveur dans netlify/functions/ask-claude.js
 
 // ===== FONCTIONS PRINCIPALES =====
 
@@ -252,56 +207,36 @@ async function sendFaqQuestion() {
   document.getElementById('faqLoader').classList.add('visible');
   
   // Construire le prompt avec instruction de langue
-  const langInstructions = {
-    fr: 'Réponds en français.',
-    fon: 'Réponds en langue fon du Bénin. Si tu ne peux pas répondre parfaitement en fon, utilise un mélange fon-français compréhensible.',
-    yoruba: 'Réponds en langue yoruba. Si difficile, mélange yoruba et français.',
-    bariba: 'Réponds en langue bariba (baatonu) du Bénin. Si tu ne peux pas, réponds en français.',
-    en: 'Reply in English.'
-  };
-
-  const prompt = `${langInstructions[faqLang]}
-
-Question : "${question}"
-
-${PROGRAMME_CONTEXT}`;
+  // Instructions de langue et prompt gérés côté serveur
 
   try {
-    if (ANTHROPIC_API_KEY === 'VOTRE_CLE_API_ICI') {
-      // Mode démo sans API — réponse simulée
-      await simulateApiDelay(1500);
+    // Appel sécurisé via Netlify Function (clé API côté serveur uniquement)
+    const response = await fetch('/.netlify/functions/ask-claude', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ question, langue: faqLang })
+    });
+
+    if (!response.ok) {
+      const err = await response.json().catch(() => ({}));
+      throw new Error(err.error || 'Erreur serveur');
+    }
+
+    const data = await response.json();
+
+    if (data.error) {
+      // Mode démo si la fonction n'est pas encore configurée
       const demoResponse = getDemoResponse(question, faqLang);
       showFaqResponse(question, demoResponse);
     } else {
-      const response = await fetch('https://api.anthropic.com/v1/messages', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'x-api-key': ANTHROPIC_API_KEY,
-          'anthropic-version': '2023-06-01'
-        },
-        body: JSON.stringify({
-          model: 'claude-haiku-4-5-20251001',
-          max_tokens: 400,
-          messages: [{ role: 'user', content: prompt }]
-        })
-      });
-
-      if (!response.ok) {
-        const err = await response.json();
-        throw new Error(err.error?.message || 'Erreur API');
-      }
-
-      const data = await response.json();
-      const answer = data.content[0].text;
-      showFaqResponse(question, answer);
+      showFaqResponse(question, data.answer);
     }
   } catch (err) {
     console.error('FAQ API error:', err);
     document.getElementById('faqLoader').classList.remove('visible');
     showFaqResponse(question, 
       faqLang === 'fr' 
-        ? '⚠️ Erreur de connexion. Vérifiez votre clé API dans le fichier index.html (variable ANTHROPIC_API_KEY).'
+        ? '⚠️ Erreur de connexion au serveur. Vérifiez que le site est bien déployé sur Netlify.'
         : '⚠️ Connection error. Check your API key.'
     );
   }
@@ -378,10 +313,10 @@ Sur le thème de votre question, le programme "Plus Loin, Ensemble" prévoit des
 → console.anthropic.com pour obtenir votre clé ($5 suffisent pour commencer)`,
     fon: `⚡ Mode démo
 
-Wadagni sín wema "Plus Loin, Ensemble" ɖó nǔ ɖaxó lɛ bló. API key sí bló nú xóɖiɖó vívɛ́. console.anthropic.com.`,
+Wadagni sín wema "Plus Loin, Ensemble" ɖó nǔ ɖaxó lɛ bló. Gbɛ site ɖó Netlify kpo ANTHROPIC_API_KEY kpo bo na mɔ xóɖiɖó vívɛ́.`,
     en: `⚡ Demo mode (no API key)
 
-The "Plus Loin, Ensemble" program covers 23 sectors for 2026-2033. Add your Anthropic API key in the ANTHROPIC_API_KEY variable to get real AI-powered answers.`
+The "Plus Loin, Ensemble" program covers 23 sectors for 2026-2033. Deploy on Netlify with ANTHROPIC_API_KEY environment variable to get real AI-powered answers.`
   };
   return demos[lang] || demos.fr;
 }
