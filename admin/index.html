@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin — Simulateur Wadagni</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+<style>
+  :root{--bleu:#0B2D6E;--bleu-clair:#1A4BAF;--or:#C8A84B;--blanc:#F7F5F0;--gris:#E8E4DC;--texte:#1A1A1A;--vert:#1B6B3A;--rouge:#C53030}
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{font-family:'DM Sans',sans-serif;background:#F0F2F8;color:var(--texte);min-height:100vh}
+
+  /* LOGIN */
+  .login-screen{display:flex;align-items:center;justify-content:center;min-height:100vh;padding:20px}
+  .login-box{background:white;border-radius:20px;padding:40px;width:100%;max-width:380px;text-align:center}
+  .login-logo{width:60px;height:60px;background:var(--bleu);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 20px;font-size:24px}
+  .login-title{font-family:'Playfair Display',serif;font-size:22px;color:var(--bleu);margin-bottom:6px}
+  .login-sub{font-size:13px;color:#888;margin-bottom:28px}
+  .login-input{width:100%;border:2px solid var(--gris);border-radius:10px;padding:12px 16px;font-size:14px;font-family:'DM Sans',sans-serif;outline:none;margin-bottom:12px;transition:border .2s}
+  .login-input:focus{border-color:var(--bleu-clair)}
+  .login-btn{width:100%;background:var(--bleu);color:white;border:none;border-radius:10px;padding:13px;font-size:15px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s}
+  .login-btn:hover{background:var(--bleu-clair)}
+  .login-error{color:var(--rouge);font-size:13px;margin-top:8px;display:none}
+
+  /* DASHBOARD */
+  .dashboard{display:none}
+  .dash-header{background:var(--bleu);padding:16px 28px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
+  .dash-header-left{display:flex;align-items:center;gap:14px}
+  .dash-logo{width:36px;height:36px;background:var(--or);border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;color:var(--bleu);flex-shrink:0}
+  .dash-title{color:white;font-weight:600;font-size:15px}
+  .dash-sub{color:rgba(255,255,255,.55);font-size:12px}
+  .dash-refresh{background:rgba(255,255,255,.15);border:none;color:white;border-radius:8px;padding:7px 14px;font-size:12px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s}
+  .dash-refresh:hover{background:rgba(255,255,255,.25)}
+  .dash-logout{background:transparent;border:1px solid rgba(255,255,255,.3);color:rgba(255,255,255,.7);border-radius:8px;padding:7px 14px;font-size:12px;cursor:pointer;font-family:'DM Sans',sans-serif}
+
+  .dash-body{padding:24px 28px;max-width:1200px;margin:0 auto}
+
+  /* STATUTS */
+  .status-bar{background:white;border-radius:12px;padding:14px 18px;margin-bottom:24px;display:flex;align-items:center;gap:10px;font-size:13px;color:#666}
+  .status-dot{width:8px;height:8px;border-radius:50%;background:#48BB78;flex-shrink:0}
+  .status-dot.loading{background:#F6AD55;animation:pulse-dot 1s infinite}
+  @keyframes pulse-dot{0%,100%{opacity:1}50%{opacity:.4}}
+
+  /* KPI CARDS */
+  .kpi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:16px;margin-bottom:28px}
+  .kpi-card{background:white;border-radius:14px;padding:20px 22px;border:1px solid var(--gris)}
+  .kpi-icon{font-size:24px;margin-bottom:8px}
+  .kpi-val{font-family:'Playfair Display',serif;font-size:28px;font-weight:700;color:var(--bleu)}
+  .kpi-label{font-size:12px;color:#888;margin-top:4px;font-weight:500}
+  .kpi-card.highlight{background:var(--bleu);border-color:var(--bleu)}
+  .kpi-card.highlight .kpi-val,.kpi-card.highlight .kpi-label{color:white}
+  .kpi-card.highlight .kpi-label{color:rgba(255,255,255,.65)}
+
+  /* SECTION TITRES */
+  .section-title{font-family:'Playfair Display',serif;font-size:16px;font-weight:700;color:var(--bleu);margin-bottom:14px;display:flex;align-items:center;gap:8px}
+
+  /* GRILLE 2 COLONNES */
+  .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:24px}
+  @media(max-width:700px){.grid-2{grid-template-columns:1fr}}
+
+  /* CHART BARRES */
+  .chart-card{background:white;border-radius:14px;padding:22px;border:1px solid var(--gris)}
+  .bar-list{display:flex;flex-direction:column;gap:10px}
+  .bar-item{display:flex;align-items:center;gap:10px}
+  .bar-label{font-size:13px;font-weight:500;min-width:120px;color:var(--texte)}
+  .bar-track{flex:1;height:8px;background:#EEF3FF;border-radius:4px;overflow:hidden}
+  .bar-fill{height:100%;border-radius:4px;background:linear-gradient(90deg,var(--bleu) 0%,var(--bleu-clair) 100%);transition:width .8s ease}
+  .bar-fill.or{background:linear-gradient(90deg,var(--or) 0%,#E8B84B 100%)}
+  .bar-fill.vert{background:linear-gradient(90deg,var(--vert) 0%,#2F855A 100%)}
+  .bar-count{font-size:12px;font-weight:700;color:var(--bleu);min-width:28px;text-align:right}
+
+  /* GRAPHIQUE VISITES */
+  .visits-chart{background:white;border-radius:14px;padding:22px;border:1px solid var(--gris);margin-bottom:24px}
+  .visits-bars{display:flex;align-items:flex-end;gap:8px;height:100px;margin-top:12px}
+  .visit-bar-wrap{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px}
+  .visit-bar{width:100%;background:linear-gradient(180deg,var(--bleu-clair) 0%,var(--bleu) 100%);border-radius:4px 4px 0 0;min-height:4px;transition:height .8s ease}
+  .visit-bar-label{font-size:10px;color:#aaa;white-space:nowrap}
+  .visit-bar-val{font-size:11px;font-weight:700;color:var(--bleu)}
+
+  /* QUESTIONS TABLE */
+  .questions-card{background:white;border-radius:14px;padding:22px;border:1px solid var(--gris);margin-bottom:24px}
+  .q-list{display:flex;flex-direction:column;gap:10px}
+  .q-item{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;padding:10px 0;border-bottom:1px solid var(--gris)}
+  .q-item:last-child{border-bottom:none;padding-bottom:0}
+  .q-text{font-size:13px;color:var(--texte);flex:1;line-height:1.5}
+  .q-meta{display:flex;align-items:center;gap:6px;flex-shrink:0}
+  .q-count{background:var(--bleu);color:white;font-size:11px;font-weight:700;padding:3px 8px;border-radius:10px}
+  .q-lang{background:#EEF3FF;color:var(--bleu);font-size:10px;font-weight:600;padding:2px 7px;border-radius:6px;text-transform:uppercase}
+
+  /* LOADER */
+  .loader-overlay{position:fixed;inset:0;background:rgba(255,255,255,.8);display:flex;align-items:center;justify-content:center;z-index:500;display:none}
+  .loader-overlay.visible{display:flex}
+  .loader-spinner{width:40px;height:40px;border:4px solid var(--gris);border-top-color:var(--bleu);border-radius:50%;animation:spin .8s linear infinite}
+  @keyframes spin{to{transform:rotate(360deg)}}
+
+  /* BADGE LANGUE */
+  .langue-badge{display:inline-flex;align-items:center;gap:4px;background:#F0F4FF;border:1px solid #D5E0F5;border-radius:8px;padding:3px 8px;font-size:11px;font-weight:600;color:var(--bleu);margin:2px}
+
+  /* UPDATED AT */
+  .updated-at{font-size:11px;color:#bbb;text-align:right;margin-top:16px}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div class="login-screen" id="loginScreen">
+  <div class="login-box">
+    <div class="login-logo">🔐</div>
+    <div class="login-title">Back-office Admin</div>
+    <div class="login-sub">Simulateur Wadagni · iCODE</div>
+    <input class="login-input" type="password" id="passwordInput" placeholder="Mot de passe admin" onkeydown="if(event.key==='Enter') login()">
+    <button class="login-btn" onclick="login()">Accéder au tableau de bord</button>
+    <div class="login-error" id="loginError">Mot de passe incorrect</div>
+  </div>
+</div>
+
+<!-- DASHBOARD -->
+<div class="dashboard" id="dashboard">
+
+  <div class="loader-overlay" id="loaderOverlay">
+    <div class="loader-spinner"></div>
+  </div>
+
+  <div class="dash-header">
+    <div class="dash-header-left">
+      <div class="dash-logo">W</div>
+      <div>
+        <div class="dash-title">Tableau de bord — Simulateur Wadagni</div>
+        <div class="dash-sub" id="dashSub">Chargement…</div>
+      </div>
+    </div>
+    <div style="display:flex;gap:8px">
+      <button class="dash-refresh" onclick="loadData()">↻ Actualiser</button>
+      <button class="dash-logout" onclick="logout()">Déconnexion</button>
+    </div>
+  </div>
+
+  <div class="dash-body">
+
+    <!-- STATUS -->
+    <div class="status-bar">
+      <div class="status-dot" id="statusDot"></div>
+      <span id="statusText">Connexion à la base de données…</span>
+    </div>
+
+    <!-- KPIs -->
+    <div class="kpi-grid" id="kpiGrid">
+      <div class="kpi-card highlight"><div class="kpi-icon">👁️</div><div class="kpi-val" id="kpiVisits">—</div><div class="kpi-label">Visites totales</div></div>
+      <div class="kpi-card"><div class="kpi-icon">✅</div><div class="kpi-val" id="kpiResults">—</div><div class="kpi-label">Résultats générés</div></div>
+      <div class="kpi-card"><div class="kpi-icon">🎙️</div><div class="kpi-val" id="kpiQuestions">—</div><div class="kpi-label">Questions FAQ posées</div></div>
+      <div class="kpi-card"><div class="kpi-icon">📲</div><div class="kpi-val" id="kpiShares">—</div><div class="kpi-label">Partages WhatsApp</div></div>
+    </div>
+
+    <!-- GRAPHIQUE VISITES PAR JOUR -->
+    <div class="visits-chart">
+      <div class="section-title">📈 Visites — 7 derniers jours</div>
+      <div class="visits-bars" id="visitsBars"></div>
+    </div>
+
+    <!-- RÉGIONS + PROFILS -->
+    <div class="grid-2">
+      <div class="chart-card">
+        <div class="section-title">🗺️ Régions les plus actives</div>
+        <div class="bar-list" id="regionsChart"></div>
+      </div>
+      <div class="chart-card">
+        <div class="section-title">👤 Profils les plus consultés</div>
+        <div class="bar-list" id="profilsChart"></div>
+      </div>
+    </div>
+
+    <!-- LANGUES FAQ -->
+    <div class="chart-card" style="margin-bottom:24px">
+      <div class="section-title">🌍 Langues utilisées pour la FAQ</div>
+      <div class="bar-list" id="languesChart"></div>
+    </div>
+
+    <!-- TOP QUESTIONS -->
+    <div class="questions-card">
+      <div class="section-title">❓ Questions les plus posées</div>
+      <div class="q-list" id="topQuestions"></div>
+    </div>
+
+    <!-- QUESTIONS RÉCENTES -->
+    <div class="questions-card">
+      <div class="section-title">🕐 Questions récentes</div>
+      <div class="q-list" id="recentQuestions"></div>
+    </div>
+
+    <div class="updated-at" id="updatedAt"></div>
+
+  </div>
+</div>
+
+<script>
+let adminToken = sessionStorage.getItem('wadagni_admin_token') || '';
+
+// Auto-login si token en session
+if (adminToken) showDashboard();
+
+function login() {
+  const pwd = document.getElementById('passwordInput').value;
+  if (!pwd) return;
+  adminToken = pwd;
+  sessionStorage.setItem('wadagni_admin_token', pwd);
+  showDashboard();
+}
+
+function logout() {
+  sessionStorage.removeItem('wadagni_admin_token');
+  adminToken = '';
+  document.getElementById('loginScreen').style.display = 'flex';
+  document.getElementById('dashboard').style.display = 'none';
+}
+
+function showDashboard() {
+  document.getElementById('loginScreen').style.display = 'none';
+  document.getElementById('dashboard').style.display = 'block';
+  loadData();
+}
+
+async function loadData() {
+  document.getElementById('loaderOverlay').classList.add('visible');
+  document.getElementById('statusDot').classList.add('loading');
+  document.getElementById('statusText').textContent = 'Chargement des données…';
+
+  try {
+    const res = await fetch('/.netlify/functions/admin-data', {
+      headers: { 'Authorization': `Bearer ${adminToken}` }
+    });
+
+    if (res.status === 401) {
+      document.getElementById('loaderOverlay').classList.remove('visible');
+      document.getElementById('loginScreen').style.display = 'flex';
+      document.getElementById('dashboard').style.display = 'none';
+      document.getElementById('loginError').style.display = 'block';
+      document.getElementById('loginError').textContent = 'Session expirée ou mot de passe incorrect';
+      return;
+    }
+
+    const data = await res.json();
+    renderDashboard(data);
+
+  } catch (err) {
+    document.getElementById('statusDot').classList.remove('loading');
+    document.getElementById('statusDot').style.background = '#FC8181';
+    document.getElementById('statusText').textContent = 'Erreur de connexion — vérifiez que Netlify Functions est configuré';
+    console.error(err);
+  } finally {
+    document.getElementById('loaderOverlay').classList.remove('visible');
+  }
+}
+
+function renderDashboard(data) {
+  // Status
+  document.getElementById('statusDot').classList.remove('loading');
+  const isDemo = data.mode === 'demo';
+  document.getElementById('statusText').textContent = isDemo
+    ? '⚡ Mode démo — configurez Supabase pour les vraies données'
+    : '✅ Connecté à la base de données Supabase';
+  document.getElementById('dashSub').textContent = `Mis à jour : ${new Date(data.updated_at).toLocaleString('fr-FR')}`;
+  document.getElementById('updatedAt').textContent = `Dernière mise à jour : ${new Date(data.updated_at).toLocaleString('fr-FR')}`;
+
+  // KPIs
+  document.getElementById('kpiVisits').textContent = data.totals.visits.toLocaleString('fr-FR');
+  document.getElementById('kpiResults').textContent = data.totals.results_generated.toLocaleString('fr-FR');
+  document.getElementById('kpiQuestions').textContent = data.totals.questions_asked.toLocaleString('fr-FR');
+  document.getElementById('kpiShares').textContent = data.totals.shares.toLocaleString('fr-FR');
+
+  // Graphique visites par jour
+  const maxVisits = Math.max(...data.visits_by_day.map(v => v.count), 1);
+  document.getElementById('visitsBars').innerHTML = data.visits_by_day.map(v => `
+    <div class="visit-bar-wrap">
+      <div class="visit-bar-val">${v.count}</div>
+      <div class="visit-bar" style="height:${Math.max(4, (v.count/maxVisits)*90)}px"></div>
+      <div class="visit-bar-label">${v.date.substr(5)}</div>
+    </div>
+  `).join('');
+
+  // Régions
+  const maxRegion = Math.max(...data.top_regions.map(r => r.count), 1);
+  const regionEmojis = {'Atlantique-Littoral':'🌊','Ouémé-Plateau':'🏙️','Zou-Collines':'🏛️','Mono-Couffo':'🏖️','Borgou-Alibori':'🌾','Atacora-Donga':'⛰️'};
+  document.getElementById('regionsChart').innerHTML = data.top_regions.map(r => `
+    <div class="bar-item">
+      <div class="bar-label">${regionEmojis[r.region]||'📍'} ${r.region.split('-')[0]}</div>
+      <div class="bar-track"><div class="bar-fill" style="width:${(r.count/maxRegion)*100}%"></div></div>
+      <div class="bar-count">${r.count}</div>
+    </div>
+  `).join('');
+
+  // Profils
+  const maxProfil = Math.max(...data.top_profils.map(p => p.count), 1);
+  const profilLabels = {jeune:'🎓 Jeune',entrepreneur:'💼 Entrepreneur',agriculteur:'🌾 Agriculteur',artiste:'🎨 Artiste',fonctionnaire:'🏛️ Fonctionnaire',mere:'👩‍👧 Mère famille',commercant:'🏪 Commerçant',artisan:'🔨 Artisan',tech:'💻 Digital'};
+  document.getElementById('profilsChart').innerHTML = data.top_profils.map(p => `
+    <div class="bar-item">
+      <div class="bar-label">${profilLabels[p.profil]||p.profil}</div>
+      <div class="bar-track"><div class="bar-fill or" style="width:${(p.count/maxProfil)*100}%"></div></div>
+      <div class="bar-count">${p.count}</div>
+    </div>
+  `).join('');
+
+  // Langues FAQ
+  const maxLang = Math.max(...data.langue_faq.map(l => l.count), 1);
+  const langLabels = {fr:'🇫🇷 Français',fon:'🇧🇯 Fon',yoruba:'Yoruba',bariba:'Bariba',en:'🇬🇧 English'};
+  document.getElementById('languesChart').innerHTML = data.langue_faq.length
+    ? data.langue_faq.map(l => `
+        <div class="bar-item">
+          <div class="bar-label">${langLabels[l.langue]||l.langue}</div>
+          <div class="bar-track"><div class="bar-fill vert" style="width:${(l.count/maxLang)*100}%"></div></div>
+          <div class="bar-count">${l.count}</div>
+        </div>
+      `).join('')
+    : '<div style="color:#aaa;font-size:13px">Aucune question posée encore</div>';
+
+  // Top questions
+  document.getElementById('topQuestions').innerHTML = data.top_questions.length
+    ? data.top_questions.map(q => `
+        <div class="q-item">
+          <div class="q-text">${escapeHtml(q.question)}</div>
+          <div class="q-meta"><div class="q-count">${q.count}×</div></div>
+        </div>
+      `).join('')
+    : '<div style="color:#aaa;font-size:13px">Aucune question pour l\'instant</div>';
+
+  // Questions récentes
+  document.getElementById('recentQuestions').innerHTML = data.recent_questions.length
+    ? data.recent_questions.map(q => `
+        <div class="q-item">
+          <div class="q-text">${escapeHtml(q.question)}</div>
+          <div class="q-meta">
+            <div class="q-lang">${q.langue}</div>
+            <div style="font-size:11px;color:#aaa">${q.date}</div>
+          </div>
+        </div>
+      `).join('')
+    : '<div style="color:#aaa;font-size:13px">Aucune question récente</div>';
+}
+
+function escapeHtml(str) {
+  return (str||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+// Auto-refresh toutes les 2 minutes
+setInterval(() => { if (adminToken && document.getElementById('dashboard').style.display !== 'none') loadData(); }, 120000);
+</script>
+</body>
+</html>

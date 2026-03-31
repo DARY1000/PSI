@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ce que Wadagni change pour moi — Plus Loin, Ensemble</title>
+<meta name="description" content="Découvrez les mesures du programme de Romuald Wadagni qui vous concernent directement — Élection présidentielle Bénin 12 avril 2026">
+<meta property="og:title" content="Ce que Wadagni change pour moi — Plus Loin, Ensemble">
+<meta property="og:description" content="Simulateur interactif du programme présidentiel 2026-2033">
+<meta property="og:type" content="website">
+<meta name="theme-color" content="#0B2D6E">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/styles.css">
+</head>
+<body>
+
+<header>
+  <div class="logo-zone">
+    <div style="width:40px;height:40px;flex-shrink:0">
+      <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="50" cy="50" r="20" fill="#C8A84B"/>
+        <g stroke="#C8A84B" stroke-width="2.5" stroke-linecap="round">
+          <line x1="50" y1="4" x2="50" y2="20"/><line x1="50" y1="80" x2="50" y2="96"/>
+          <line x1="4" y1="50" x2="20" y2="50"/><line x1="80" y1="50" x2="96" y2="50"/>
+          <line x1="16" y1="16" x2="28" y2="28"/><line x1="72" y1="72" x2="84" y2="84"/>
+          <line x1="84" y1="16" x2="72" y2="28"/><line x1="28" y1="72" x2="16" y2="84"/>
+          <line x1="33" y1="6" x2="37" y2="21"/><line x1="63" y1="79" x2="67" y2="94"/>
+          <line x1="6" y1="33" x2="21" y2="37"/><line x1="79" y1="63" x2="94" y2="67"/>
+          <line x1="6" y1="67" x2="21" y2="63"/><line x1="79" y1="37" x2="94" y2="33"/>
+          <line x1="33" y1="94" x2="37" y2="79"/><line x1="63" y1="21" x2="67" y2="6"/>
+          <line x1="10" y1="43" x2="22" y2="45"/><line x1="78" y1="55" x2="90" y2="57"/>
+          <line x1="43" y1="10" x2="45" y2="22"/><line x1="55" y1="78" x2="57" y2="90"/>
+        </g>
+      </svg>
+    </div>
+    <div class="logo-text"><strong>Romuald Wadagni</strong>Présidentielle · 12 avril 2026</div>
+  </div>
+  <div class="badge-campagne">Plus Loin, Ensemble</div>
+</header>
+
+<div class="hero">
+  <div class="hero-bg-suns">
+    <img src="assets/sun.png" alt="" style="width:320px;top:-80px;right:-60px;opacity:0.12;filter:sepia(1) saturate(3) hue-rotate(5deg) brightness(1.5)">
+    <img src="assets/sun.png" alt="" style="width:220px;bottom:-60px;left:-40px;opacity:0.09;filter:sepia(1) saturate(3) hue-rotate(5deg) brightness(1.5)">
+  </div>
+  <div class="hero-content">
+    <div class="hero-tag">
+      <svg viewBox="0 0 24 24" width="14" height="14" fill="#F0D680" style="flex-shrink:0"><path d="M12 2a2 2 0 0 1 2 2c0 .74-.4 1.39-1 1.73V7h1a7 7 0 0 1 7 7h1a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1h-1v1a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-1H2a1 1 0 0 1-1-1v-3a1 1 0 0 1 1-1h1a7 7 0 0 1 7-7h1V5.73c-.6-.34-1-.99-1-1.73a2 2 0 0 1 2-2M7.5 13A2.5 2.5 0 0 0 5 15.5 2.5 2.5 0 0 0 7.5 18a2.5 2.5 0 0 0 2.5-2.5A2.5 2.5 0 0 0 7.5 13m9 0a2.5 2.5 0 0 0-2.5 2.5 2.5 2.5 0 0 0 2.5 2.5 2.5 2.5 0 0 0 2.5-2.5A2.5 2.5 0 0 0 16.5 13z"/></svg>
+      Projet de société Intelligent
+    </div>
+    <h1>Ce que Wadagni<span>change pour moi</span></h1>
+    <p>Découvrez en 30 secondes les mesures concrètes du projet « Plus Loin, Ensemble » qui vous concernent directement, issues du programme officiel 2026–2033.</p>
+  </div>
+</div>
+
+<div class="steps-bar">
+  <div class="step-item active" id="step1-ind" onclick="goToStep(1)" style="cursor:pointer" title="Retour au profil"><div class="step-num">1</div> Mon profil</div>
+  <div class="step-item" id="step2-ind" onclick="goToStep(2)" style="cursor:pointer" title="Retour à la région"><div class="step-num">2</div> Ma région</div>
+  <div class="step-item" id="step3-ind" onclick="goToStep(3)" style="cursor:pointer" title="Retour aux priorités"><div class="step-num">3</div> Mes priorités</div>
+  <div class="step-item" id="step4-ind" onclick="goToStep(4)" style="cursor:pointer" title="Voir le résultat"><div class="step-num">4</div> Mon résultat</div>
+</div>
+
+<div class="container">
+  <div id="formZone">
+    <div id="step1">
+      <div class="section-title">Quel est votre profil ?</div>
+      <div class="section-sub">Choisissez celui qui vous correspond le mieux</div>
+      <div class="profils-grid">
+        <div class="profil-card" data-profil="jeune" onclick="selectProfil(this)"><span class="profil-emoji">🎓</span><div class="profil-label">Jeune / Étudiant</div></div>
+        <div class="profil-card" data-profil="entrepreneur" onclick="selectProfil(this)"><span class="profil-emoji">💼</span><div class="profil-label">Entrepreneur / PME</div></div>
+        <div class="profil-card" data-profil="agriculteur" onclick="selectProfil(this)"><span class="profil-emoji">🌾</span><div class="profil-label">Agriculteur / Éleveur</div></div>
+        <div class="profil-card" data-profil="artiste" onclick="selectProfil(this)"><span class="profil-emoji">🎨</span><div class="profil-label">Artiste / Créatif</div></div>
+        <div class="profil-card" data-profil="fonctionnaire" onclick="selectProfil(this)"><span class="profil-emoji">🏛️</span><div class="profil-label">Fonctionnaire</div></div>
+        <div class="profil-card" data-profil="mere" onclick="selectProfil(this)"><span class="profil-emoji">👩‍👧</span><div class="profil-label">Mère de famille</div></div>
+        <div class="profil-card" data-profil="commercant" onclick="selectProfil(this)"><span class="profil-emoji">🏪</span><div class="profil-label">Commerçant(e)</div></div>
+        <div class="profil-card" data-profil="artisan" onclick="selectProfil(this)"><span class="profil-emoji">🔨</span><div class="profil-label">Artisan</div></div>
+        <div class="profil-card" data-profil="tech" onclick="selectProfil(this)"><span class="profil-emoji">💻</span><div class="profil-label">Pro du digital</div></div>
+      </div>
+    </div>
+    <div id="step2" style="display:none">
+      <div class="section-title">Où vivez-vous ?</div>
+      <div class="section-sub">Chaque pôle aura son plan de développement spécifique</div>
+      <div class="region-grid">
+        <div class="region-card" data-region="Atlantique-Littoral" onclick="selectRegion(this)"><div class="region-dot"></div><div><div class="region-name">Atlantique · Littoral</div><div class="region-atout">GDIZ · Économie bleue · Ganvié</div></div></div>
+        <div class="region-card" data-region="Ouémé-Plateau" onclick="selectRegion(this)"><div class="region-dot"></div><div><div class="region-name">Ouémé · Plateau</div><div class="region-atout">Zone Kétou-Nigeria · Porto-Novo</div></div></div>
+        <div class="region-card" data-region="Zou-Collines" onclick="selectRegion(this)"><div class="region-dot"></div><div><div class="region-name">Zou · Collines</div><div class="region-atout">Abomey · Agro-industrie</div></div></div>
+        <div class="region-card" data-region="Mono-Couffo" onclick="selectRegion(this)"><div class="region-dot"></div><div><div class="region-name">Mono · Couffo</div><div class="region-atout">Grand-Popo · Tourisme balnéaire</div></div></div>
+        <div class="region-card" data-region="Borgou-Alibori" onclick="selectRegion(this)"><div class="region-dot"></div><div><div class="region-name">Borgou · Alibori</div><div class="region-atout">CHIP Parakou · Agriculture Nord</div></div></div>
+        <div class="region-card" data-region="Atacora-Donga" onclick="selectRegion(this)"><div class="region-dot"></div><div><div class="region-name">Atacora · Donga</div><div class="region-atout">Monts Kouffè · Safari · Écotourisme</div></div></div>
+      </div>
+    </div>
+    <div id="step3" style="display:none">
+      <div class="section-title">Vos priorités du moment</div>
+      <div class="section-sub">Sélectionnez jusqu'à 3 sujets qui comptent le plus pour vous</div>
+      <div class="concerns-grid">
+        <div class="concern-chip" onclick="toggleConcern(this)">💰 Emploi & revenus</div>
+        <div class="concern-chip" onclick="toggleConcern(this)">🏥 Santé & soins</div>
+        <div class="concern-chip" onclick="toggleConcern(this)">📚 Éducation</div>
+        <div class="concern-chip" onclick="toggleConcern(this)">🔒 Sécurité</div>
+        <div class="concern-chip" onclick="toggleConcern(this)">💡 Électricité & eau</div>
+        <div class="concern-chip" onclick="toggleConcern(this)">🚀 Entrepreneuriat</div>
+        <div class="concern-chip" onclick="toggleConcern(this)">🌍 Agriculture</div>
+        <div class="concern-chip" onclick="toggleConcern(this)">🏗️ Infrastructures</div>
+        <div class="concern-chip" onclick="toggleConcern(this)">💻 Numérique & tech</div>
+        <div class="concern-chip" onclick="toggleConcern(this)">🎭 Culture & arts</div>
+        <div class="concern-chip" onclick="toggleConcern(this)">👵 Retraite</div>
+        <div class="concern-chip" onclick="toggleConcern(this)">🤝 Protection sociale</div>
+      </div>
+      <button class="btn-generate" id="genBtn" onclick="generateResult()" disabled>
+        <span>Découvrir mon programme personnalisé</span><span style="font-size:20px">→</span>
+      </button>
+    </div>
+  </div>
+
+  <div class="loading-zone" id="loadingZone">
+    <div class="loading-spinner"></div>
+    <div class="loading-text">Analyse du programme en cours…</div>
+    <div class="loading-sub">Parcours des 23 secteurs du projet « Plus Loin, Ensemble »</div>
+  </div>
+
+  <div class="result-zone" id="resultZone">
+    <div class="result-header">
+      <div class="result-profil-badge" id="resultBadge"></div>
+      <div class="result-title" id="resultTitle">Ce que Wadagni change concrètement pour vous</div>
+      <div class="result-region-tag" id="resultRegionTag"></div>
+    </div>
+    <div class="result-body">
+      <div class="bilan-strip" id="bilanStrip"></div>
+      <ul class="measure-list" id="measureList"></ul>
+      <div class="quote-box">
+        <div class="quote-text" id="quoteText"></div>
+        <div class="quote-author">— Romuald Wadagni, Palais des Congrès de Cotonou, 21 mars 2026</div>
+      </div>
+      <div class="cta-zone">
+        <button class="btn-share" onclick="shareWhatsApp()">📲 Partager sur WhatsApp</button>
+        <button class="btn-restart" onclick="restart()">🔄 Recommencer</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="footer-note">
+    Simulateur basé sur le programme officiel <strong>« Plus Loin, Ensemble »</strong> de Romuald Wadagni–Talata (2026–2033).<br>
+    Programme présenté le 21 mars 2026 · 23 secteurs · 68 pages · <a href="https://wadagnitalata.bj" target="_blank">wadagnitalata.bj</a>
+  </div>
+</div>
+
+<script src="assets/data.js"></script>
+<script src="assets/simulator.js"></script>
+<script src="assets/faq.js"></script>
+<script src="assets/tracking.js"></script>
+
+<!-- ============================================
+     FAQ VOCALE INTELLIGENTE
+============================================ -->
+
+<!-- Bouton flottant -->
+<div class="faq-fab" id="faqFab">
+  <div class="faq-fab-label" id="faqFabLabel">Posez votre question</div>
+  <button class="faq-fab-btn" id="faqFabBtn" onclick="toggleFaq()" title="FAQ vocale intelligente">
+    🎙️
+  </button>
+</div>
+
+<!-- Panneau FAQ -->
+<div class="faq-panel" id="faqPanel">
+  <div class="faq-box">
+
+    <div class="faq-header">
+      <div>
+        <div class="faq-header-title">🎙️ Posez votre question</div>
+        <div class="faq-header-sub">Réponse IA en français · fon · yoruba · bariba</div>
+      </div>
+      <button class="faq-close" onclick="closeFaq()">✕</button>
+    </div>
+
+    <div class="faq-body">
+
+      <!-- Alerte navigateur non compatible -->
+      <div class="faq-browser-warn" id="faqBrowserWarn">
+        ⚠️ Votre navigateur ne supporte pas le micro. Utilisez Chrome ou Edge sur Android/PC.
+      </div>
+
+      <!-- Sélecteur de langue de réponse -->
+      <div style="font-size:12px;font-weight:600;color:#888;margin-bottom:8px;text-transform:uppercase;letter-spacing:.5px;">Langue de réponse</div>
+      <div class="faq-lang-strip" id="faqLangStrip">
+        <button class="faq-lang-btn active" data-lang="fr" onclick="setLang(this)">🇫🇷 Français</button>
+        <button class="faq-lang-btn" data-lang="fon" onclick="setLang(this)">🇧🇯 Fon</button>
+        <button class="faq-lang-btn" data-lang="yoruba" onclick="setLang(this)">Yoruba</button>
+        <button class="faq-lang-btn" data-lang="bariba" onclick="setLang(this)">Bariba</button>
+        <button class="faq-lang-btn" data-lang="en" onclick="setLang(this)">🇬🇧 English</button>
+      </div>
+
+      <!-- Bouton micro -->
+      <div class="faq-mic-zone">
+        <button class="faq-mic-btn" id="faqMicBtn" onclick="toggleMic()">🎙️</button>
+        <div class="faq-mic-status" id="faqMicStatus">Appuyez pour parler</div>
+      </div>
+
+      <!-- Transcript de la voix -->
+      <div class="faq-transcript" id="faqTranscript"></div>
+
+      <!-- Séparateur -->
+      <div class="faq-or">ou écrivez votre question</div>
+
+      <!-- Saisie texte -->
+      <div class="faq-input-zone">
+        <input
+          class="faq-input"
+          id="faqInput"
+          type="text"
+          placeholder="Ex: Que prévoit Wadagni pour les agriculteurs ?"
+          onkeydown="if(event.key==='Enter') sendFaqQuestion()"
+        />
+        <button class="faq-send-btn" onclick="sendFaqQuestion()" title="Envoyer">→</button>
+      </div>
+
+      <!-- Loader -->
+      <div class="faq-loader" id="faqLoader">
+        <div class="faq-dots"><span></span><span></span><span></span></div>
+        <div class="faq-loader-text">Consultation du programme en cours…</div>
+      </div>
+
+      <!-- Réponse courante -->
+      <div class="faq-response" id="faqResponse">
+        <div class="faq-response-header">
+          <div class="faq-response-dot"></div>
+          Réponse du programme officiel
+        </div>
+        <div class="faq-response-text" id="faqResponseText"></div>
+        <button class="faq-speak-btn" id="faqSpeakBtn" onclick="speakResponse()">
+          🔊 Écouter la réponse
+        </button>
+      </div>
+
+      <!-- Historique -->
+      <div class="faq-history" id="faqHistory"></div>
+
+    </div>
+  </div>
+</div>
+
+</body>
+</html>
