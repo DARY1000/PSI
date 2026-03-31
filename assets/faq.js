@@ -1,11 +1,15 @@
 /* Wadagni Simulateur — FAQ Vocale Intelligente
- * Nécessite une clé API 
+ * Nécessite une clé API Anthropic : console.anthropic.com
+ * La clé API est gérée côté serveur via Netlify Functions
  */
 
 // ============================================
 // FAQ VOCALE INTELLIGENTE — Module complet
 // ============================================
 
+// Clé API Anthropic — À remplacer par votre clé
+// Pour obtenir : console.anthropic.com → API Keys
+// Clé API gérée côté serveur via Netlify Function — ne jamais mettre de clé ici
 
 // État
 let faqOpen = false;
@@ -201,6 +205,7 @@ async function sendFaqQuestion() {
   const input = document.getElementById('faqInput');
   const question = input.value.trim();
   if (!question) return;
+  console.log('[FAQ] Envoi question vers /.netlify/functions/ask-claude :', question, 'langue:', faqLang);
   
   // Masquer réponse précédente, montrer loader
   document.getElementById('faqResponse').classList.remove('visible');
@@ -224,21 +229,17 @@ async function sendFaqQuestion() {
 
     const data = await response.json();
 
-    if (data.error) {
-      // Mode démo si la fonction n'est pas encore configurée
-      const demoResponse = getDemoResponse(question, faqLang);
-      showFaqResponse(question, demoResponse);
-    } else {
+    if (data.answer) {
       showFaqResponse(question, data.answer);
+    } else if (data.error) {
+      showFaqResponse(question, '⚠️ Erreur serveur : ' + data.error);
+    } else {
+      showFaqResponse(question, '⚠️ Réponse vide reçue du serveur.');
     }
   } catch (err) {
     console.error('FAQ API error:', err);
     document.getElementById('faqLoader').classList.remove('visible');
-    showFaqResponse(question, 
-      faqLang === 'fr' 
-        ? '⚠️ Erreur de connexion au serveur. Vérifiez que le site est bien déployé sur Netlify.'
-        : '⚠️ Connection error. Check your API key.'
-    );
+    showFaqResponse(question, '⚠️ Erreur : ' + (err.message || 'connexion impossible') + '. Vérifiez que le site est déployé sur Netlify avec la variable ANTHROPIC_API_KEY configurée.');
   }
 
   input.value = '';
@@ -303,27 +304,7 @@ function renderFaqHistory() {
   histEl.innerHTML = '<div style="font-size:11px;font-weight:600;color:#aaa;text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">Historique</div>' + items;
 }
 
-// Réponse démo sans API (pour tester l'interface)
-function getDemoResponse(question, lang) {
-  const demos = {
-    fr: `⚡ Mode démo (sans clé API)
 
-Sur le thème de votre question, le programme "Plus Loin, Ensemble" prévoit des mesures concrètes issues des 23 secteurs du projet 2026-2033. Pour obtenir des réponses dynamiques générées par IA, ajoutez votre clé API Anthropic dans la variable ANTHROPIC_API_KEY du fichier index.html.
-
-→ console.anthropic.com pour obtenir votre clé ($5 suffisent pour commencer)`,
-    fon: `⚡ Mode démo
-
-Wadagni sín wema "Plus Loin, Ensemble" ɖó nǔ ɖaxó lɛ bló. Gbɛ site ɖó Netlify kpo ANTHROPIC_API_KEY kpo bo na mɔ xóɖiɖó vívɛ́.`,
-    en: `⚡ Demo mode (no API key)
-
-The "Plus Loin, Ensemble" program covers 23 sectors for 2026-2033. Deploy on Netlify with ANTHROPIC_API_KEY environment variable to get real AI-powered answers.`
-  };
-  return demos[lang] || demos.fr;
-}
-
-function simulateApiDelay(ms) {
-  return new Promise(resolve => setTimeout(resolve, ms));
-}
 
 // Masquer le label FAB après 4 secondes
 setTimeout(() => {
