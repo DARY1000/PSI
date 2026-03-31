@@ -15,10 +15,14 @@ exports.handler = async (event, context) => {
 
   // Vérification mot de passe admin
   const authHeader = event.headers.authorization || '';
-  const token = authHeader.replace('Bearer ', '');
-  const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'wadagni2026admin';
+  const token = authHeader.replace('Bearer ', '').trim();
+  const ADMIN_PASSWORD = (process.env.ADMIN_PASSWORD || 'wadagni2026admin').trim();
+
+  console.log('Token reçu (longueur):', token.length);
+  console.log('Password attendu (longueur):', ADMIN_PASSWORD.length);
 
   if (token !== ADMIN_PASSWORD) {
+    console.log('Auth échouée - token:', token.substring(0,5), '... vs password:', ADMIN_PASSWORD.substring(0,5), '...');
     return {
       statusCode: 401,
       headers,
@@ -27,7 +31,7 @@ exports.handler = async (event, context) => {
   }
 
   const SUPABASE_URL = process.env.SUPABASE_URL;
-  const SUPABASE_KEY = process.env.SUPABASE_ANON_KEY;
+  const SUPABASE_KEY = process.env.SUPABASE_SERVICE_KEY || process.env.SUPABASE_ANON_KEY;
 
   if (!SUPABASE_URL || !SUPABASE_KEY) {
     // Retourner des données de démo si pas de DB configurée
