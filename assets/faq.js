@@ -76,98 +76,12 @@ function setLang(btn) {
 }
 
 function toggleMic() {
-  if (faqIsRecording) stopMic();
-  else startMic();
+  showFaqNotice('🎙️ La reconnaissance vocale sera disponible prochainement. Utilisez la saisie texte ci-dessous.');
 }
 
 function startMic() {
-  // Audio temporairement désactivé — bientôt disponible
   showFaqNotice('🎙️ La reconnaissance vocale sera disponible prochainement. Utilisez la saisie texte ci-dessous.');
   return;
-
-  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-  if (!SpeechRecognition) {
-    document.getElementById('faqBrowserWarn').classList.add('visible');
-    return;
-  }
-
-  // Vérifier si contexte sécurisé
-  if (!window.isSecureContext && location.hostname !== 'localhost' && location.hostname !== '127.0.0.1') {
-    showFaqNotice('🔒 Le microphone nécessite HTTPS ou localhost. Déployez sur Netlify pour activer cette fonction.');
-    return;
-  }
-
-  faqRecognition = new SpeechRecognition();
-  
-  // Langue de reconnaissance (fon/bariba → fr-FR car navigateur)
-  const langMap = { fr: 'fr-FR', en: 'en-US', fon: 'fr-FR', yoruba: 'yo', bariba: 'fr-FR' };
-  faqRecognition.lang = langMap[faqLang] || 'fr-FR';
-  faqRecognition.continuous = false;
-  faqRecognition.interimResults = true;
-  faqRecognition.maxAlternatives = 1;
-
-  faqRecognition.onstart = () => {
-    faqIsRecording = true;
-    const labels = langLabels[faqLang];
-    document.getElementById('faqMicBtn').classList.add('recording');
-    document.getElementById('faqMicBtn').textContent = '⏹️';
-    const statusEl = document.getElementById('faqMicStatus');
-    statusEl.textContent = labels.recording;
-    statusEl.classList.add('recording');
-    document.getElementById('faqFabBtn').classList.add('recording');
-  };
-
-  faqRecognition.onresult = (event) => {
-    const transcript = Array.from(event.results)
-      .map(r => r[0].transcript)
-      .join('');
-    
-    const transcriptEl = document.getElementById('faqTranscript');
-    transcriptEl.textContent = '🗣️ "' + transcript + '"';
-    transcriptEl.classList.add('visible');
-    
-    // Si résultat final, envoyer automatiquement
-    if (event.results[event.results.length - 1].isFinal) {
-      document.getElementById('faqInput').value = transcript;
-      stopMic();
-      setTimeout(() => sendFaqQuestion(), 500);
-    }
-  };
-
-  faqRecognition.onerror = (event) => {
-    console.error('Mic error:', event.error);
-    const statusEl = document.getElementById('faqMicStatus');
-    const isLocalFile = location.protocol === 'file:';
-    const isHttp = location.protocol === 'http:' && location.hostname !== 'localhost' && location.hostname !== '127.0.0.1';
-
-    if (event.error === 'not-allowed') {
-      if (isLocalFile) {
-        statusEl.textContent = '⚠️ Fichier local — lancez un serveur HTTP';
-        showFaqNotice('🖥️ Vous ouvrez le fichier directement. Le micro nécessite un serveur. Lancez dans le terminal : python -m http.server 8080  puis ouvrez http://localhost:8080 dans le navigateur.');
-      } else if (isHttp) {
-        statusEl.textContent = '⚠️ HTTPS requis pour le micro';
-        showFaqNotice('🔒 Le micro nécessite HTTPS. Déployez sur Netlify (gratuit) ou activez SSL Let\'s Encrypt sur Hostinger.');
-      } else {
-        statusEl.textContent = '⚠️ Permission micro refusée';
-        showFaqNotice('🎙️ Cliquez sur l\'icône 🔒 dans la barre d\'adresse → Microphone → Autoriser, puis réessayez.');
-      }
-    } else if (event.error === 'no-speech') {
-      statusEl.textContent = 'Aucune voix détectée — réessayez';
-    } else if (event.error === 'network') {
-      statusEl.textContent = 'Erreur réseau — vérifiez votre connexion';
-    } else {
-      statusEl.textContent = 'Erreur micro — utilisez la saisie texte';
-    }
-    statusEl.classList.remove('recording');
-    resetMicUI();
-  };
-
-  faqRecognition.onend = () => {
-    faqIsRecording = false;
-    resetMicUI();
-  };
-
-  faqRecognition.start();
 }
 
 function stopMic() {

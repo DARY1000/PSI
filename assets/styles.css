@@ -446,20 +446,16 @@
   /* Copyright bar */
   .copyright-bar {
     text-align: center;
-    margin-top: 16px;
-    padding: 14px 20px;
-    background: var(--bleu);
-    color: rgba(255,255,255,0.7);
-    font-size: 13px;
-    border-radius: 12px;
+    margin-top: 8px;
+    font-size: 11px;
+    color: #aaa;
   }
-  .copyright-bar strong { color: white; }
-  .copyright-bar a { color: var(--or-clair); text-decoration: none; }
-  .copyright-bar a:hover { text-decoration: underline; }
+  .copyright-bar strong { color: #888; font-weight: 600; }
+  .copyright-bar a { color: #aaa; text-decoration: none; }
+  .copyright-bar a:hover { color: #666; }
   .icode-tag {
     font-family: monospace;
-    font-size: 13px;
-    color: var(--or-clair);
+    font-size: 11px;
+    color: #888;
     font-weight: 700;
-    letter-spacing: -0.5px;
   }
