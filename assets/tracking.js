@@ -1,5 +1,4 @@
-/* Wadagni Simulateur — Tracking anonyme des visites
- * Envoie les événements à Netlify Functions → Supabase
+/* Wadagni Simulateur — Tracking anonyme
  * Mainteneur : Armel Kouandi DARI — iCODE Cotonou
  */
 
@@ -7,7 +6,6 @@
   const sessionId = Math.random().toString(36).substr(2, 12) + Date.now().toString(36);
   const startTime = Date.now();
 
-  // === FONCTION D'ENVOI ===
   async function track(event_type, payload = {}) {
     try {
       await fetch('/.netlify/functions/track', {
@@ -23,6 +21,20 @@
     } catch (e) {}
   }
 
+  // Helpers pour lire les sélections depuis le DOM
+  function getSelectedProfil() {
+    const card = document.querySelector('.profil-card.selected');
+    return card ? card.dataset.profil : 'unknown';
+  }
+  function getSelectedRegion() {
+    const card = document.querySelector('.region-card.selected');
+    return card ? card.dataset.region : 'unknown';
+  }
+  function getSelectedConcerns() {
+    return Array.from(document.querySelectorAll('.concern-chip.selected'))
+      .map(c => c.textContent.trim()).join(',');
+  }
+
   // === VISITE ===
   track('page_view', {
     referrer: document.referrer || 'direct',
@@ -30,68 +42,75 @@
     screen: screen.width + 'x' + screen.height
   });
 
-  // === HOOKS — attendre que simulator.js soit chargé ===
-  window.addEventListener('DOMContentLoaded', () => {
+  // === CLICS sur les cartes — écoute directe sur le document ===
+  document.addEventListener('click', function(e) {
+    const profilCard = e.target.closest('.profil-card');
+    if (profilCard) {
+      track('select_profil', { profil: profilCard.dataset.profil });
+    }
 
-    // HOOK : SÉLECTION PROFIL
-    const origSelectProfil = window.selectProfil;
-    window.selectProfil = function(card) {
-      track('select_profil', { profil: card.dataset.profil });
-      if (origSelectProfil) origSelectProfil.call(this, card);
-    };
+    const regionCard = e.target.closest('.region-card');
+    if (regionCard) {
+      track('select_region', { region: regionCard.dataset.region });
+    }
 
-    // HOOK : SÉLECTION RÉGION
-    const origSelectRegion = window.selectRegion;
-    window.selectRegion = function(card) {
-      track('select_region', { region: card.dataset.region });
-      if (origSelectRegion) origSelectRegion.call(this, card);
-    };
+    // Bouton générer résultat
+    const genBtn = e.target.closest('#genBtn');
+    if (genBtn) {
+      setTimeout(() => {
+        track('generate_result', {
+          profil: getSelectedProfil(),
+          region: getSelectedRegion(),
+          concerns: getSelectedConcerns()
+        });
+      }, 100);
+    }
 
-    // HOOK : GÉNÉRATION RÉSULTAT
-    const origGenerateResult = window.generateResult;
-    window.generateResult = function() {
-      track('generate_result', {
-        profil: window.selProfil || 'unknown',
-        region: window.selRegion || 'unknown',
-        concerns: (window.selConcerns || []).join(',')
-      });
-      if (origGenerateResult) origGenerateResult.call(this);
-    };
-
-    // HOOK : PARTAGE WHATSAPP
-    const origShareWhatsApp = window.shareWhatsApp;
-    window.shareWhatsApp = function() {
+    // Bouton partage WhatsApp
+    const shareBtn = e.target.closest('.btn-share');
+    if (shareBtn) {
       track('share_whatsapp', {
-        profil: window.selProfil || 'unknown',
-        region: window.selRegion || 'unknown'
+        profil: getSelectedProfil(),
+        region: getSelectedRegion()
       });
-      if (origShareWhatsApp) origShareWhatsApp.call(this);
-    };
+    }
 
-    // HOOK : QUESTION FAQ
-    const origSendFaqQuestion = window.sendFaqQuestion;
-    window.sendFaqQuestion = function() {
+    // Bouton envoyer FAQ
+    const sendBtn = e.target.closest('.faq-send-btn');
+    if (sendBtn) {
+      setTimeout(() => {
+        const input = document.getElementById('faqInput');
+        const question = input ? input.value.trim() : '';
+        const langue = window.faqLang || 'fr';
+        if (question) {
+          track('faq_question', {
+            question: question.substring(0, 200),
+            langue_reponse: langue
+          });
+        }
+      }, 50);
+    }
+  });
+
+  // Touche Entrée dans la FAQ
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Enter') {
       const input = document.getElementById('faqInput');
-      const question = input ? input.value.trim() : '';
-      const langue = window.faqLang || 'fr';
-      if (question) {
+      if (document.activeElement === input && input.value.trim()) {
         track('faq_question', {
-          question: question.substring(0, 200),
-          langue_reponse: langue
+          question: input.value.trim().substring(0, 200),
+          langue_reponse: window.faqLang || 'fr'
         });
       }
-      if (origSendFaqQuestion) origSendFaqQuestion.call(this);
-    };
-
+    }
   });
 
   // === FIN DE SESSION ===
   window.addEventListener('beforeunload', () => {
-    const duration = Math.round((Date.now() - startTime) / 1000);
     navigator.sendBeacon('/.netlify/functions/track', JSON.stringify({
       event_type: 'session_end',
       session_id: sessionId,
-      duration_seconds: duration,
+      duration_seconds: Math.round((Date.now() - startTime) / 1000),
       timestamp: new Date().toISOString()
     }));
   });
