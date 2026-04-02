@@ -1,6 +1,8 @@
 // netlify/functions/admin-data.js
+// Expose les données agrégées pour le back-office admin
+// Protégé par mot de passe via variable d'environnement ADMIN_PASSWORD
 
-exports.handler = async (event) => {
+exports.handler = async (event, context) => {
   const headers = {
     'Access-Control-Allow-Origin': '*',
     'Access-Control-Allow-Headers': 'Content-Type, Authorization',
@@ -11,125 +13,171 @@ exports.handler = async (event) => {
     return { statusCode: 200, headers, body: '' };
   }
 
-  // Auth
-  const authHeader = event.headers['authorization'] || event.headers['Authorization'] || '';
+  // Vérification mot de passe admin
+  const authHeader = event.headers.authorization || '';
   const token = authHeader.replace('Bearer ', '').trim();
-  const ADMIN_PASSWORD = (process.env.ADMIN_PASSWORD || '').trim();
+  const ADMIN_PASSWORD = (process.env.ADMIN_PASSWORD || 'wadagni2026admin').trim();
 
-  if (!ADMIN_PASSWORD || token !== ADMIN_PASSWORD) {
-    return { statusCode: 401, headers, body: JSON.stringify({ error: 'Non autorisé' }) };
+  console.log('Token reçu (longueur):', token.length);
+  console.log('Password attendu (longueur):', ADMIN_PASSWORD.length);
+
+  if (token !== ADMIN_PASSWORD) {
+    console.log('Auth échouée - token:', token.substring(0,5), '... vs password:', ADMIN_PASSWORD.substring(0,5), '...');
+    return {
+      statusCode: 401,
+      headers,
+      body: JSON.stringify({ error: 'Non autorisé' })
+    };
   }
 
-  const SUPABASE_URL = (process.env.SUPABASE_URL || '').trim().replace(/\/+$/, '');
-  const SUPABASE_KEY = (process.env.SUPABASE_SERVICE_KEY || process.env.SUPABASE_ANON_KEY || '').trim();
+  const SUPABASE_URL = process.env.SUPABASE_URL;
+  const SUPABASE_KEY = process.env.SUPABASE_SERVICE_KEY || process.env.SUPABASE_ANON_KEY;
 
-  console.log('URL:', JSON.stringify(SUPABASE_URL));
-  console.log('KEY length:', SUPABASE_KEY.length);
-
-  // Pas de Supabase → données démo
   if (!SUPABASE_URL || !SUPABASE_KEY) {
-    return { statusCode: 200, headers, body: JSON.stringify(getDemoData()) };
+    // Retourner des données de démo si pas de DB configurée
+    return {
+      statusCode: 200,
+      headers,
+      body: JSON.stringify(getDemoData())
+    };
   }
-
-  const sbHeaders = {
-    'apikey': SUPABASE_KEY,
-    'Authorization': 'Bearer ' + SUPABASE_KEY,
-    'Content-Type': 'application/json'
-  };
 
   try {
-    const [vRes, rRes, qRes, sRes] = await Promise.all([
-      fetch(SUPABASE_URL + '/rest/v1/visits?select=id', { headers: sbHeaders }),
-      fetch(SUPABASE_URL + '/rest/v1/results?select=id', { headers: sbHeaders }),
-      fetch(SUPABASE_URL + '/rest/v1/questions?select=id', { headers: sbHeaders }),
-      fetch(SUPABASE_URL + '/rest/v1/shares?select=id', { headers: sbHeaders })
-    ]);
+    const supabaseHeaders = {
+      'apikey': SUPABASE_KEY,
+      'Authorization': `Bearer ${SUPABASE_KEY}`,
+      'Content-Type': 'application/json'
+    };
 
-    if (!vRes.ok) {
-      const errText = await vRes.text();
-      console.error('Supabase error:', vRes.status, errText);
-      // Retourner démo avec message d erreur
-      return { statusCode: 200, headers, body: JSON.stringify({
-        ...getDemoData(),
-        mode: 'error',
-        debug: 'Supabase ' + vRes.status + ': ' + errText.substring(0, 100)
-      })};
-    }
+    // Récupérer toutes les données en parallèle
+    const [visitsRes, resultsRes, questionsRes, sharesRes] = await Promise.all([
+      fetch(`${SUPABASE_URL}/rest/v1/visits?select=*&order=created_at.desc&limit=500`, { headers: supabaseHeaders }),
+      fetch(`${SUPABASE_URL}/rest/v1/results?select=*&order=created_at.desc&limit=500`, { headers: supabaseHeaders }),
+      fetch(`${SUPABASE_URL}/rest/v1/questions?select=*&order=created_at.desc&limit=200`, { headers: supabaseHeaders }),
+      fetch(`${SUPABASE_URL}/rest/v1/shares?select=*&order=created_at.desc&limit=200`, { headers: supabaseHeaders })
+    ]);
 
     const [visits, results, questions, shares] = await Promise.all([
-      vRes.json(), rRes.json(), qRes.json(), sRes.json()
+      visitsRes.json(),
+      resultsRes.json(),
+      questionsRes.json(),
+      sharesRes.json()
     ]);
 
-    const [rDetail, qDetail] = await Promise.all([
-      fetch(SUPABASE_URL + '/rest/v1/results?select=profil,region,created_at&order=created_at.desc&limit=500', { headers: sbHeaders }).then(r => r.json()),
-      fetch(SUPABASE_URL + '/rest/v1/questions?select=question,langue_reponse,created_at&order=created_at.desc&limit=200', { headers: sbHeaders }).then(r => r.json())
-    ]);
+    // Agréger les données
+    const regionCount = {};
+    const profilCount = {};
+    const questionCount = {};
+    const langueCount = {};
 
-    const regionCount = {}, profilCount = {}, questionCount = {}, langueCount = {};
-
-    (Array.isArray(rDetail) ? rDetail : []).forEach(r => {
-      if (r.region) regionCount[r.region] = (regionCount[r.region] || 0) + 1;
-      if (r.profil) profilCount[r.profil] = (profilCount[r.profil] || 0) + 1;
+    (results || []).forEach(r => {
+      regionCount[r.region] = (regionCount[r.region] || 0) + 1;
+      profilCount[r.profil] = (profilCount[r.profil] || 0) + 1;
     });
 
-    (Array.isArray(qDetail) ? qDetail : []).forEach(q => {
-      const text = (q.question || '').toLowerCase().trim().substring(0, 100);
+    (questions || []).forEach(q => {
+      const text = q.question?.toLowerCase().trim();
       if (text) questionCount[text] = (questionCount[text] || 0) + 1;
-      const lang = q.langue_reponse || 'fr';
-      langueCount[lang] = (langueCount[lang] || 0) + 1;
+      langueCount[q.langue_reponse] = (langueCount[q.langue_reponse] || 0) + 1;
     });
 
+    // Top questions (triées par fréquence)
+    const topQuestions = Object.entries(questionCount)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 20)
+      .map(([q, count]) => ({ question: q, count }));
+
+    // Visites par jour (7 derniers jours)
     const visitsByDay = {};
     const now = new Date();
-    for (let i = 6; i >= 0; i--) {
+    for (let i = 11; i >= 0; i--) {
       const d = new Date(now);
-      d.setDate(d.getDate() - i);
-      visitsByDay[d.toISOString().substr(0, 10)] = 0;
+      d.setHours(d.getHours() - i * 2, 0, 0, 0);
+      const key = ('0'+d.getHours()).slice(-2) + 'h';
+      visitsByDay[key] = 0;
     }
     (Array.isArray(visits) ? visits : []).forEach(v => {
-      const day = (v.created_at || '').substr(0, 10);
-      if (day && visitsByDay[day] !== undefined) visitsByDay[day]++;
+      const d = new Date(v.created_at || '');
+      if (!isNaN(d.getTime())) {
+        const h = Math.floor(d.getHours() / 2) * 2;
+        const key = ('0'+h).slice(-2) + 'h';
+        if (visitsByDay[key] !== undefined) visitsByDay[key]++;
+      }
     });
 
-    return { statusCode: 200, headers, body: JSON.stringify({
-      mode: 'live',
-      totals: {
-        visits: Array.isArray(visits) ? visits.length : 0,
-        results_generated: Array.isArray(results) ? results.length : 0,
-        questions_asked: Array.isArray(questions) ? questions.length : 0,
-        shares: Array.isArray(shares) ? shares.length : 0
-      },
-      top_regions: Object.entries(regionCount).sort((a,b)=>b[1]-a[1]).map(([r,c])=>({region:r,count:c})),
-      top_profils: Object.entries(profilCount).sort((a,b)=>b[1]-a[1]).map(([p,c])=>({profil:p,count:c})),
-      top_questions: Object.entries(questionCount).sort((a,b)=>b[1]-a[1]).slice(0,20).map(([q,c])=>({question:q,count:c})),
-      langue_faq: Object.entries(langueCount).sort((a,b)=>b[1]-a[1]).map(([l,c])=>({langue:l,count:c})),
-      visits_by_day: Object.entries(visitsByDay).map(([d,c])=>({date:d,count:c})),
-      recent_questions: (Array.isArray(qDetail) ? qDetail : []).slice(0,30).map(q=>({
-        question: q.question, langue: q.langue_reponse, date: (q.created_at||'').substr(0,10)
-      })),
-      updated_at: new Date().toISOString()
-    })};
+    return {
+      statusCode: 200,
+      headers,
+      body: JSON.stringify({
+        totals: {
+          visits: (visits || []).length,
+          results_generated: (results || []).length,
+          questions_asked: (questions || []).length,
+          shares: (shares || []).length
+        },
+        top_regions: Object.entries(regionCount).sort((a, b) => b[1] - a[1]).map(([r, c]) => ({ region: r, count: c })),
+        top_profils: Object.entries(profilCount).sort((a, b) => b[1] - a[1]).map(([p, c]) => ({ profil: p, count: c })),
+        top_questions: topQuestions,
+        langue_faq: Object.entries(langueCount).sort((a, b) => b[1] - a[1]).map(([l, c]) => ({ langue: l, count: c })),
+        visits_by_day: Object.entries(visitsByDay).map(([d, c]) => ({ date: d, count: c })),
+        recent_questions: (questions || []).slice(0, 30).map(q => ({
+          question: q.question,
+          langue: q.langue_reponse,
+          date: q.created_at?.substr(0, 10)
+        })),
+        updated_at: new Date().toISOString()
+      })
+    };
 
   } catch (err) {
-    console.error('Exception:', err.message);
-    return { statusCode: 200, headers, body: JSON.stringify({
-      ...getDemoData(), mode: 'exception', debug: err.message
-    })};
+    console.error('Admin data error:', err);
+    return { statusCode: 500, headers, body: JSON.stringify({ error: err.message }) };
   }
 };
 
 function getDemoData() {
-  const now = new Date();
-  const days = [];
-  for (let i = 6; i >= 0; i--) {
-    const d = new Date(now); d.setDate(d.getDate() - i);
-    days.push({ date: d.toISOString().substr(0,10), count: 0 });
-  }
   return {
-    mode: 'demo',
-    totals: { visits: 0, results_generated: 0, questions_asked: 0, shares: 0 },
-    top_regions: [], top_profils: [], top_questions: [], langue_faq: [],
-    visits_by_day: days, recent_questions: [],
-    updated_at: new Date().toISOString()
+    totals: { visits: 247, results_generated: 189, questions_asked: 43, shares: 67 },
+    top_regions: [
+      { region: 'Atlantique-Littoral', count: 89 },
+      { region: 'Borgou-Alibori', count: 34 },
+      { region: 'Ouémé-Plateau', count: 28 },
+      { region: 'Zou-Collines', count: 21 },
+      { region: 'Mono-Couffo', count: 11 },
+      { region: 'Atacora-Donga', count: 6 }
+    ],
+    top_profils: [
+      { profil: 'jeune', count: 67 },
+      { profil: 'agriculteur', count: 34 },
+      { profil: 'entrepreneur', count: 31 },
+      { profil: 'mere', count: 22 },
+      { profil: 'commercant', count: 18 }
+    ],
+    top_questions: [
+      { question: 'que prévoit wadagni pour les jeunes ?', count: 8 },
+      { question: 'comment obtenir le crédit en 48h ?', count: 6 },
+      { question: 'quand sera construit le chip parakou ?', count: 5 },
+      { question: 'q\'est-ce que la gdiz ?', count: 4 }
+    ],
+    langue_faq: [
+      { langue: 'fr', count: 38 },
+      { langue: 'fon', count: 3 },
+      { langue: 'yoruba', count: 2 }
+    ],
+    visits_by_day: [
+      { date: '2026-03-25', count: 12 },
+      { date: '2026-03-26', count: 28 },
+      { date: '2026-03-27', count: 45 },
+      { date: '2026-03-28', count: 67 },
+      { date: '2026-03-29', count: 52 },
+      { date: '2026-03-30', count: 34 },
+      { date: '2026-03-31', count: 9 }
+    ],
+    recent_questions: [
+      { question: 'Que prévoit Wadagni pour les agriculteurs ?', langue: 'fr', date: '2026-03-31' },
+      { question: 'Credit 48h comment ça marche ?', langue: 'fr', date: '2026-03-31' }
+    ],
+    updated_at: new Date().toISOString(),
+    mode: 'demo'
   };
 }

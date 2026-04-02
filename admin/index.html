@@ -153,7 +153,7 @@
 
     <!-- GRAPHIQUE VISITES PAR JOUR -->
     <div class="visits-chart">
-      <div class="section-title">📈 Visites — 7 derniers jours</div>
+      <div class="section-title">📈 Visites — 24 dernières heures</div>
       <div class="visits-bars" id="visitsBars"></div>
     </div>
 
@@ -254,10 +254,17 @@ async function loadData() {
 function renderDashboard(data) {
   // Status
   document.getElementById('statusDot').classList.remove('loading');
-  const isDemo = data.mode === 'demo';
-  document.getElementById('statusText').textContent = isDemo
-    ? '⚡ Mode démo — configurez Supabase pour les vraies données'
-    : '✅ Connecté à la base de données Supabase';
+  const modeMessages = {
+    'live': '✅ Connecté — données en temps réel',
+    'demo': '⚡ Mode démo',
+    'demo-no-db': '⚠️ Supabase non configuré — vérifiez SUPABASE_URL et SUPABASE_SERVICE_KEY dans Netlify',
+    'demo-db-error': '⚠️ Erreur Supabase : ' + (data.debug || 'vérifiez les variables'),
+    'demo-exception': '⚠️ Exception : ' + (data.debug || 'erreur inconnue')
+  };
+  document.getElementById('statusText').textContent = modeMessages[data.mode] || '⚡ Mode démo';
+  if (data.mode && data.mode !== 'live') {
+    document.getElementById('statusDot').style.background = '#F6AD55';
+  }
   document.getElementById('dashSub').textContent = `Mis à jour : ${new Date(data.updated_at).toLocaleString('fr-FR')}`;
   document.getElementById('updatedAt').textContent = `Dernière mise à jour : ${new Date(data.updated_at).toLocaleString('fr-FR')}`;
 
