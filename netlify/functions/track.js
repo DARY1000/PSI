@@ -28,11 +28,12 @@ exports.handler = async (event, context) => {
       return { statusCode: 400, headers, body: JSON.stringify({ error: 'Missing fields' }) };
     }
 
-    const SUPABASE_URL = process.env.SUPABASE_URL;
-    const SUPABASE_KEY = process.env.SUPABASE_ANON_KEY;
+    const SUPABASE_URL = (process.env.SUPABASE_URL || '').trim().replace(/\/+$/, '');
+    const SUPABASE_KEY = (process.env.SUPABASE_ANON_KEY || '').trim();
+
+    console.log('[track] URL:', JSON.stringify(SUPABASE_URL));
 
     if (!SUPABASE_URL || !SUPABASE_KEY) {
-      // Si pas configuré, ignorer silencieusement
       return { statusCode: 200, headers, body: JSON.stringify({ ok: true, mode: 'no-db' }) };
     }
 
