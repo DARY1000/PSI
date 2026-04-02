@@ -90,19 +90,14 @@ exports.handler = async (event, context) => {
     // Visites par jour (7 derniers jours)
     const visitsByDay = {};
     const now = new Date();
-    for (let i = 11; i >= 0; i--) {
+    for (let i = 6; i >= 0; i--) {
       const d = new Date(now);
-      d.setHours(d.getHours() - i * 2, 0, 0, 0);
-      const key = ('0'+d.getHours()).slice(-2) + 'h';
-      visitsByDay[key] = 0;
+      d.setDate(d.getDate() - i);
+      visitsByDay[d.toISOString().substr(0, 10)] = 0;
     }
-    (Array.isArray(visits) ? visits : []).forEach(v => {
-      const d = new Date(v.created_at || '');
-      if (!isNaN(d.getTime())) {
-        const h = Math.floor(d.getHours() / 2) * 2;
-        const key = ('0'+h).slice(-2) + 'h';
-        if (visitsByDay[key] !== undefined) visitsByDay[key]++;
-      }
+    (visits || []).forEach(v => {
+      const day = v.created_at?.substr(0, 10);
+      if (day && visitsByDay[day] !== undefined) visitsByDay[day]++;
     });
 
     return {
@@ -119,6 +114,7 @@ exports.handler = async (event, context) => {
         top_profils: Object.entries(profilCount).sort((a, b) => b[1] - a[1]).map(([p, c]) => ({ profil: p, count: c })),
         top_questions: topQuestions,
         langue_faq: Object.entries(langueCount).sort((a, b) => b[1] - a[1]).map(([l, c]) => ({ langue: l, count: c })),
+        mode: 'live',
         visits_by_day: Object.entries(visitsByDay).map(([d, c]) => ({ date: d, count: c })),
         recent_questions: (questions || []).slice(0, 30).map(q => ({
           question: q.question,
