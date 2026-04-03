@@ -30,21 +30,18 @@ function showResult(){
 
 function shareWhatsApp(){
   const d=D[selProfil];
-  const lines=[
-    '🇧🇯 *Ce que Wadagni change pour moi*',
-    d.label + ' · ' + selRegion,
-    '',
-    d.measures.slice(0,3).map(m=>'✅ *'+m.title+'*').join('\n'),
-    '',
-    '💬 '+d.quote,
-    '',
-    '👉 Testez votre profil sur project-wadagni.netlify.app',
-    '#PlusLoinEnsemble #Wadagni2026'
-  ];
-  const t = lines.join('\n');
-  // Web Share API sur mobile (meilleur support des emojis)
+  var flag='\uD83C\uDDE7\uD83C\uDDEF';
+  var check='\u2705';
+  var speech='\uD83D\uDCAC';
+  var point='\uD83D\uDC49';
+  var t=flag+' *Ce que Wadagni change pour moi*\n'
+    +d.label+' \u00B7 '+selRegion+'\n\n'
+    +d.measures.slice(0,3).map(function(m){return check+' *'+m.title+'*';}).join('\n')+'\n\n'
+    +speech+' '+d.quote+'\n\n'
+    +point+' project-wadagni.netlify.app\n'
+    +'#PlusLoinEnsemble #Wadagni2026';
   if(navigator.share){
-    navigator.share({ text: t }).catch(()=>{
+    navigator.share({text:t}).catch(function(){
       window.open('https://wa.me/?text='+encodeURIComponent(t),'_blank');
     });
   } else {
