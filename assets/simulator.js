@@ -30,22 +30,31 @@ function showResult(){
 
 function shareWhatsApp(){
   const d=D[selProfil];
-  var flag='\uD83C\uDDE7\uD83C\uDDEF';
-  var check='\u2705';
-  var speech='\uD83D\uDCAC';
-  var point='\uD83D\uDC49';
-  var t=flag+' *Ce que Wadagni change pour moi*\n'
-    +d.label+' \u00B7 '+selRegion+'\n\n'
-    +d.measures.slice(0,3).map(function(m){return check+' *'+m.title+'*';}).join('\n')+'\n\n'
-    +speech+' '+d.quote+'\n\n'
-    +point+' project-wadagni.netlify.app\n'
-    +'#PlusLoinEnsemble #Wadagni2026';
+  const t=[
+    String.fromCodePoint(0x1F1E7,0x1F1EF)+' *Ce que Wadagni change pour moi*',
+    d.label+' \u00B7 '+selRegion,
+    '',
+    d.measures.slice(0,3).map(function(m){
+      return String.fromCodePoint(0x2705)+' *'+m.title+'*';
+    }).join('\n'),
+    '',
+    String.fromCodePoint(0x1F4AC)+' '+d.quote,
+    '',
+    String.fromCodePoint(0x1F449)+' project-wadagni.netlify.app',
+    '#PlusLoinEnsemble #Wadagni2026'
+  ].join('\n');
+  // Sur iOS : Web Share API directe, pas d'URL encoding
   if(navigator.share){
-    navigator.share({text:t}).catch(function(){
-      window.open('https://wa.me/?text='+encodeURIComponent(t),'_blank');
-    });
+    navigator.share({title:'Ce que Wadagni change pour moi',text:t});
   } else {
-    window.open('https://wa.me/?text='+encodeURIComponent(t),'_blank');
+    // Desktop : copier dans le presse-papier + ouvrir WhatsApp Web
+    if(navigator.clipboard){
+      navigator.clipboard.writeText(t).then(function(){
+        alert('Texte copié ! Collez-le dans WhatsApp.');
+      });
+    } else {
+      window.open('https://wa.me/?text='+encodeURIComponent(t),'_blank');
+    }
   }
 }
 
